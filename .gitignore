@@ -1,0 +1,30 @@
+
+# Environments
+.env
+.envrc
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Python
+__pycache__/
+logs
+runs
+dump
+
+# Latex
+# ignore everything in latex_out (all levels)
+latex_out
+
+# MLFlow
+mlflow.db
+
+# Ruff
+.ruff_cache
+mlruns
+
+.databricks
+%OUTDIR%
