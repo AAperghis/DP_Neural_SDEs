@@ -16,7 +16,6 @@ azimuth thrusters (the remaining thrusters are tunnel-type).
 from __future__ import annotations
 
 import jax
-import jax.typing as jtp
 import jax.numpy as jnp
 import numpy as np
 

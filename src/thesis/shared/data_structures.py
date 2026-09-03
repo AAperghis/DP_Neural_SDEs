@@ -49,9 +49,9 @@ class FieldConfig:
     scale: bool = True
     context_size: int = 32
     control_size: int = 1
-    diagonal: bool = False
+    diagonal: bool = True
     key: jtp.ArrayLike = field(default_factory=lambda: jr.key(time.time_ns()))
-    mean_reversion: bool = False
+    mean_reversion: bool = True
     input_size: int | None = (
         None  # If set, overrides latent_size for MLP input dimension
     )
@@ -192,18 +192,6 @@ class TrainingConfig:
         None  # List of (train_len, n_prior) pairs for curriculum learning. train_len in seconds.
     )
     weight_decay: float = 0.0  # AdamW decoupled weight decay (0 = plain Adam)
-    sens_loss_weight: float = (
-        0.0  # Weight on sensitivity (Hs-bucket std slope) loss on prior samples
-    )
-    moment_loss_weight: float = (
-        0.0  # Weight on marginal moment-matching loss on prior samples
-    )
-    aux_loss_every: int = (
-        4  # Compute sens/moment losses once every N optimisation steps (>=1)
-    )
-    aux_loss_subbatch: int = (
-        32  # Number of prior trajectories solved per aux-loss evaluation
-    )
 
 
 @dataclass
@@ -217,12 +205,6 @@ class DataConfig:
     truncate_seconds: float = 0.0
     group_scaling: bool = True
     test_fraction: float = 0.2
-    rpm_limit: list[float] = field(
-        default_factory=lambda: [250.0, 250.0, 250.0, 250.0, 160.0, 160.0]
-    )
-    rpm_rate_limit: list[float] = field(
-        default_factory=lambda: [250.0, 250.0, 250.0, 250.0, 160.0, 160.0]
-    )
     hs_max: float | None = None  # If set, exclude runs with Hs >= this value
     wave_keys: list[str] = field(default_factory=lambda: ["Hs", "Tp", "beta_wave"])
     # Subset of wave_keys to encode as (cos, sin) pairs instead of min-max
@@ -272,8 +254,6 @@ _DATACLASS_TYPES = {
     "DataConfig": DataConfig,
     "HyperParameters": HyperParameters,
     "FullOrderPhysicsConfig": FullOrderPhysicsConfig,
-    # Backward-compat aliases (old JSON configs use these names)
-    "FOPhysicsConfig": FullOrderPhysicsConfig,
 }
 
 
@@ -312,9 +292,6 @@ def _deserialize(obj, cls=None):
         if "__dataclass__" in obj:
             dc_cls = _DATACLASS_TYPES[obj["__dataclass__"]]
 
-            # --- Backwards compatibility: old flat ModelConfig → nested FieldConfigs ---
-            if dc_cls is ModelConfig and "f_config" not in obj and "f_type" in obj:
-                obj = _migrate_model_config(obj)
             # --- Backwards compatibility: fo_physics_config → fo_physics_config ---
             if (
                 dc_cls is ModelConfig
@@ -335,46 +312,6 @@ def _deserialize(obj, cls=None):
     if isinstance(obj, list):
         return [_deserialize(v) for v in obj]
     return obj
-
-
-def _migrate_model_config(obj: dict) -> dict:
-    """Convert an old-style flat ModelConfig dict to the new nested FieldConfig format."""
-    latent_size = obj.get("latent_size", 32)
-    hidden_size = obj.get("hidden_size", 64)
-    ctx_size = obj.get("ctx_size", 32)
-    depth = obj.get("depth", 2)
-    control_size = obj.get("control_size", 1)
-    diagonal = obj.get("diagonal", False)
-
-    def _make_fc(field_type_obj, *, context=False, diffusion=False):
-        fc = {"__dataclass__": "FieldConfig"}
-        fc["field_type"] = field_type_obj
-        fc["latent_size"] = latent_size
-        fc["hidden_layer_width"] = hidden_size
-        fc["depth"] = depth
-        fc["context_size"] = ctx_size if context else 0
-        if diffusion:
-            fc["control_size"] = control_size
-            fc["diagonal"] = diagonal
-        return fc
-
-    f_type = obj.get("f_type", {"__enum__": "FieldType", "value": "context_state"})
-    h_type = obj.get("h_type", {"__enum__": "FieldType", "value": "state"})
-    g_type = obj.get("g_type", {"__enum__": "FieldType", "value": "state"})
-
-    # Determine if f/h need context based on their field type
-    f_type_val = f_type.get("value", "") if isinstance(f_type, dict) else ""
-    h_type_val = h_type.get("value", "") if isinstance(h_type, dict) else ""
-    f_needs_ctx = "context" in f_type_val
-    h_needs_ctx = "context" in h_type_val
-
-    new_obj = {"__dataclass__": "ModelConfig"}
-    new_obj["f_config"] = _make_fc(f_type, context=f_needs_ctx)
-    new_obj["h_config"] = _make_fc(h_type, context=h_needs_ctx)
-    new_obj["g_config"] = _make_fc(g_type, diffusion=True)
-
-    return new_obj
-
 
 def hyperparams_to_json(hp: HyperParameters, path: str | Path) -> None:
     """Save HyperParameters to a JSON file."""

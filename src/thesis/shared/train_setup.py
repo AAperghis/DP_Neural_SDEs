@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Callable
 
 import jax
-import jax.typing as jtp
 import optax
 from thesis.shared.base_dataset import BaseParquetDataset
 from thesis.shared.data_structures import HyperParameters

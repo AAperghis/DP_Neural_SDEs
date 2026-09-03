@@ -17,7 +17,6 @@ import numpy as np
 import jax
 import jax.numpy as jnp
 import jax.random as jr
-import jax.typing as jtp
 
 # Batch type: (t, x, wave_cond, meta_list)
 Batch = tuple[jax.Array, jax.Array, jax.Array, list[dict[str, Any]]]
@@ -41,13 +40,13 @@ class BaseParquetDataset(ABC):
     * ``resample_every``
     * ``resample_dt``
     * ``group_scaling``
-    * ``standardise``        – ``{"mean": ndarray, "std": ndarray}``
-    * ``_wave_cond``         – ``dict[int, ndarray]``  (run/file id → scaled wc)
-    * ``_wave_min``          – ``ndarray``
-    * ``_wave_max``          – ``ndarray``
+    * ``standardise``        - ``{"mean": ndarray, "std": ndarray}``
+    * ``_wave_cond``         - ``dict[int, ndarray]``  (run/file id → scaled wc)
+    * ``_wave_min``          - ``ndarray``
+    * ``_wave_max``          - ``ndarray``
     * ``_sample_length``
     * ``n_per_series``
-    * ``all_indices``        – ``list[tuple[int, int]]``
+    * ``all_indices``        - ``list[tuple[int, int]]``
 
     And implement the abstract helpers listed below.
     """

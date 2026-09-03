@@ -36,7 +36,7 @@ dependencies = [
 
 [tool.uv]
 package = true
-default-groups = ["cuda", "torch"]
+default-groups = ["cuda"]
 conflicts = [
     [
         { group = "cpu" },
@@ -44,19 +44,6 @@ conflicts = [
         { group = "amd"}
     ],
 ]
-
-[tool.uv.sources]
-torch = [
-  { index = "pytorch-cu128"},
-]
-torchvision = [
-  { index = "pytorch-cu128"},
-]
-
-[[tool.uv.index]]
-name = "pytorch-cu128"
-url = "https://download.pytorch.org/whl/cu128"
-explicit = true
 
 [build-system]
 requires = ["uv_build>=0.9.11,<=0.10.9"]
@@ -66,17 +53,8 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "tensorboard>=2.20.0",
-    "pytest>=8.0",
-    "xprof>=2.22.0",
-    "snakeviz>=2.2.2",
     "ruff>=0.15.0",
     "nvidia-ml-py>=13.590.48",
-    "mkdocs>=1.6.1",
-    "mkdocs-material>=9.7.6",
-    "mkdocstrings[python]>=1.0.3",
-    "mkdocs-gen-files>=0.6.1",
-    "mkdocs-literate-nav>=0.6.3",
     "ipykernel>=7.2.0",
     "pip-licenses>=5.5.5",
     "license-audit>=0.12.1",
@@ -95,28 +73,12 @@ amd = [
     {include-group = "dev"}
 ]
 
-
-torch = [
-    "torch>=2.10.0",
-    "torchsde>=0.2.6",
-    "torchvision>=0.25.0",
-]
-
 [project.optional-dependencies]
 cpu = ["jax>=0.9.0"]
 cuda = [
     "jax[cuda12]>=0.9.0; sys_platform != 'win32'",
     "jax>=0.9.0; sys_platform == 'win32'",
   ]
-torch = [
-    "torch>=2.10.0",
-    "torchsde>=0.2.6",
-    "torchvision>=0.25.0",
-  ]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = ["-v", "--tb=short"]
 
 [tool.ruff.lint]
 ignore = ["E731"]

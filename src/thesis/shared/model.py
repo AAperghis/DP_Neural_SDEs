@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 import diffrax
 import equinox as eqx
 import jax
-import jax.typing as jtp
 import jax.numpy as jnp
 import jax.random as jr
 

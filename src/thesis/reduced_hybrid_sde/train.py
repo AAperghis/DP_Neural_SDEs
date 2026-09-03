@@ -14,7 +14,6 @@ import equinox as eqx
 import jax
 import jax.numpy as jnp
 import jax.random as jr
-import jax.typing as jtp
 import mlflow
 import optax
 

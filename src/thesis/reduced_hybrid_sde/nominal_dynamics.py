@@ -6,7 +6,6 @@ The model uses a linear vessel model and includes the proportional and derivativ
 """
 
 import jax
-import jax.typing as jtp
 import jax.numpy as jnp
 from matplotlib import pyplot as plt
 from thesis.shared.data_structures import PhysicsConfig

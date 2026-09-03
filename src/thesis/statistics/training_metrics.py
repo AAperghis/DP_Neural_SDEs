@@ -342,7 +342,7 @@ def _truncated_signature(path: np.ndarray, depth: int = 3) -> np.ndarray:
     path : (T, d)
         Single multivariate time series.
     depth : int
-        Truncation depth (1–4 recommended).
+        Truncation depth (1-4 recommended).
 
     Returns
     -------

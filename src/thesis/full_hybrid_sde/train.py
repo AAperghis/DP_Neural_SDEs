@@ -21,7 +21,6 @@ from pathlib import Path
 
 import equinox as eqx
 import jax
-import jax.typing as jtp
 import jax.numpy as jnp
 import jax.random as jr
 import mlflow
@@ -88,23 +87,13 @@ def batch_loss_fn(
     key,
     kl_weight: jax.Array = jnp.array(1.0),
     log_sigma: jax.Array = jnp.array(-5.0),
-    sens_weight: jax.Array = jnp.array(0.0),
-    moment_weight: jax.Array = jnp.array(0.0),
-    aux_active: jax.Array = jnp.array(False),
-    aux_subbatch: int = 32,
 ) -> tuple[
     jax.Array,
     tuple[jax.Array, jax.Array, jax.Array],
 ]:
-    """Batch-mean ELBO + optional prior-based aux losses, with gradients.
-
-    Aux losses fire only when ``aux_active`` is True (a traced scalar so
-    JIT cost amortises). They use the first ``aux_subbatch`` items of
-    the batch.
-    """
+    """Batch-mean ELBO with gradients."""
     batch_size = xs_batch.shape[0]
-    elbo_key, aux_key = jr.split(key)
-    keys = jr.split(elbo_key, batch_size)
+    keys = jr.split(key, batch_size)
 
     losses, (kl_initials, kl_paths, log_pxs) = jax.vmap(
         lambda x, wc, k: loss_fn(
@@ -193,12 +182,7 @@ class FOHybridTrainSetup(TrainSetup):
         return optax.join_schedules([warmup, decay], [warmup_steps])
 
     def make_train_step_fn(self, optimizer, model_static, dataset, hyperparams):
-        """Build a JIT-compiled training step that accepts wave conditioning.
-
-        Maintains an internal Python-side step counter so the shared training
-        loop's contract (no ``step`` kwarg) is preserved while still feeding a
-        traced scalar to the JIT body for the aux-loss skipping branch.
-        """
+        """Build a JIT-compiled training step that accepts wave conditioning."""
 
         @eqx.filter_jit
         def train(

@@ -11,10 +11,9 @@ from thesis.statistics.ensemble_stats import (
     ensemble_psd,
     ensemble_cross_correlation,
     cross_correlation_error,
-    filter_outliers,
+
 )
-from thesis.statistics.convergence import convergence_time, convergence_samples
-from thesis.statistics.comparison import compare_ensembles
+
 from thesis.statistics.training_metrics import (
     compute_training_stats,
     compute_derived_quantities,
@@ -26,7 +25,6 @@ from thesis.statistics.training_metrics import (
     plot_sea_state_comparison,
 )
 from thesis.statistics.extreme_values import pot_extreme_values, EVResult, POTResult
-from thesis.statistics.main import main as run_statistics
 
 __all__ = [
     "load_ensemble",
@@ -34,10 +32,6 @@ __all__ = [
     "ensemble_psd",
     "ensemble_cross_correlation",
     "cross_correlation_error",
-    "filter_outliers",
-    "convergence_time",
-    "convergence_samples",
-    "compare_ensembles",
     "compute_training_stats",
     "compute_derived_quantities",
     "plot_cross_correlation",
@@ -49,5 +43,4 @@ __all__ = [
     "pot_extreme_values",
     "EVResult",
     "POTResult",
-    "run_statistics",
 ]

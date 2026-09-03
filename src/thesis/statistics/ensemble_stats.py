@@ -6,165 +6,14 @@ All functions operate on plain numpy arrays of shape (N, T, F).
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 import numpy as np
 from scipy import signal, stats
-from thesis.statistics.loading import Ensemble
-from thesis.statistics.extreme_values import EVResult
 
 log = logging.getLogger(__name__)
 
-
-# ---------------------------------------------------------------------------
-# 0. Outlier filtering
-# ---------------------------------------------------------------------------
-
-
-@dataclass
-class OutlierResult:
-    """Report from outlier filtering.
-
-    Attributes
-    ----------
-    mask : (N,) bool array — True for *kept* samples.
-    n_total : int — original ensemble size.
-    n_kept : int — samples retained.
-    n_nan : int — samples removed due to NaN / Inf.
-    n_iqr : int — samples removed by IQR criterion (union across features).
-    removed_indices : list[int] — original indices of removed samples.
-    per_feature_removed : dict[int, int] — count of IQR-removed per feature.
-    """
-
-    mask: np.ndarray
-    n_total: int
-    n_kept: int
-    n_nan: int
-    n_iqr: int
-    removed_indices: list = field(default_factory=list)
-    per_feature_removed: dict = field(default_factory=dict)
-
-    def summary(self, feature_names: list[str] | None = None) -> str:
-        """Human-readable summary of what was filtered."""
-        lines = [
-            f"Outlier filter: kept {self.n_kept} / {self.n_total} samples "
-            f"({self.n_nan} NaN/Inf, {self.n_iqr} IQR)"
-        ]
-        for fi, count in sorted(self.per_feature_removed.items()):
-            name = (
-                feature_names[fi]
-                if feature_names and fi < len(feature_names)
-                else f"f{fi}"
-            )
-            lines.append(f"  feature {name}: {count} removed by IQR")
-        return "\n".join(lines)
-
-
-def filter_outliers(
-    data: np.ndarray,
-    iqr_factor: float = 3.0,
-    max_abs: float | None = None,
-    feature_names: list[str] | None = None,
-) -> tuple[np.ndarray, OutlierResult]:
-    """Remove unstable / diverged samples from an (N, T, F) ensemble.
-
-    Filtering is applied in two stages:
-
-    1. **NaN / Inf removal** — any sample containing a non-finite value is
-       dropped unconditionally.
-    2. **Per-feature IQR gating** — for each feature independently, the
-       per-sample maximum absolute value across timesteps is computed.
-       Samples exceeding ``Q3 + iqr_factor * IQR`` on *any* feature are
-       removed.  Alternatively, if *max_abs* is given, that fixed threshold
-       is used instead of the IQR rule.
-
-    Parameters
-    ----------
-    data : (N, T, F) array
-    iqr_factor : float
-        Multiplier on the IQR for automatic threshold (default 3.0).
-    max_abs : float, optional
-        If given, use this hard ceiling on per-sample max |value| instead of
-        the IQR method.
-    feature_names : list[str], optional
-        Feature names for the summary printout.
-
-    Returns
-    -------
-    filtered : (N', T, F) array
-        Data with outlier samples removed.
-    report : OutlierResult
-        Diagnostics on what was removed.
-    """
-    N, F = data.shape[0], data.shape[2]
-    finite_mask = np.all(np.isfinite(data.reshape(N, -1)), axis=1)  # (N,)
-    n_nan = int(np.sum(~finite_mask))
-
-    # Work only on finite samples for IQR computation
-    finite_data = data[finite_mask]
-    # Per-sample, per-feature peak: (N_finite, F)
-    peak = np.max(np.abs(finite_data), axis=1)
-
-    # Per-feature IQR gating — a sample is removed if it's an outlier
-    # on ANY feature
-    iqr_mask_local = np.ones(finite_data.shape[0], dtype=bool)
-    per_feature_removed: dict[int, int] = {}
-
-    for f in range(F):
-        col = peak[:, f]
-        if max_abs is not None:
-            feat_ok = col <= max_abs
-        elif len(col) >= 4:
-            q1, q3 = np.percentile(col, [25, 75])
-            iqr = q3 - q1
-            upper = q3 + iqr_factor * iqr
-            feat_ok = col <= upper
-        else:
-            feat_ok = np.ones(len(col), dtype=bool)
-
-        n_removed_feat = int(np.sum(~feat_ok))
-        if n_removed_feat > 0:
-            per_feature_removed[f] = n_removed_feat
-        iqr_mask_local &= feat_ok
-
-    n_iqr = int(np.sum(~iqr_mask_local))
-
-    # Map local mask back to original indices
-    full_mask = finite_mask.copy()
-    full_mask[finite_mask] &= iqr_mask_local
-
-    removed = np.where(~full_mask)[0].tolist()
-    n_kept = int(np.sum(full_mask))
-
-    report = OutlierResult(
-        mask=full_mask,
-        n_total=N,
-        n_kept=n_kept,
-        n_nan=n_nan,
-        n_iqr=n_iqr,
-        removed_indices=removed,
-        per_feature_removed=per_feature_removed,
-    )
-    summary = report.summary(feature_names)
-    log.info(summary)
-    print(summary)
-
-    return data[full_mask], report
-
-
-def _maybe_filter(
-    data: np.ndarray,
-    iqr_factor: float | None,
-    max_abs: float | None,
-) -> np.ndarray:
-    """Apply outlier filtering when requested, return cleaned data."""
-    if iqr_factor is None and max_abs is None:
-        return data
-    filtered, _ = filter_outliers(
-        data, iqr_factor=iqr_factor if iqr_factor is not None else 3.0, max_abs=max_abs
-    )
-    return filtered
 
 
 # ---------------------------------------------------------------------------
@@ -200,8 +49,6 @@ class MomentResult:
 
 def ensemble_moments(
     data: np.ndarray,
-    iqr_factor: float | None = None,
-    max_abs: float | None = None,
 ) -> MomentResult:
     """Compute time-resolved and scalar ensemble moments.
 
@@ -217,7 +64,6 @@ def ensemble_moments(
     -------
     MomentResult
     """
-    data = _maybe_filter(data, iqr_factor, max_abs)
     data = np.asarray(data, dtype=np.float64)
 
     # Replace non-finite values to prevent overflow in scipy stats
@@ -301,8 +147,6 @@ class CrossCorrelationResult:
 
 def ensemble_cross_correlation(
     data: np.ndarray,
-    iqr_factor: float | None = None,
-    max_abs: float | None = None,
 ) -> CrossCorrelationResult:
     """Compute the ensemble-averaged Pearson cross-correlation matrix.
 
@@ -314,14 +158,10 @@ def ensemble_cross_correlation(
     data : (N, T, F)
         Ensemble of time-series.  N = realisations, T = time steps,
         F = features.
-    iqr_factor, max_abs
-        Optional outlier filtering (same as :func:`ensemble_moments`).
-
     Returns
     -------
     CrossCorrelationResult
     """
-    data = _maybe_filter(data, iqr_factor, max_abs)
     data = np.asarray(data, dtype=np.float64)
     N, T, F = data.shape
 
@@ -402,8 +242,6 @@ def ensemble_psd(
     dt: float,
     n_per_seg: int | None = None,
     n_overlap: int | None = None,
-    iqr_factor: float | None = None,
-    max_abs: float | None = None,
 ) -> PSDResult:
     """Compute ensemble-averaged PSD via Welch's method.
 
@@ -413,16 +251,10 @@ def ensemble_psd(
     dt : float  Sampling interval in seconds.
     n_per_seg : int, optional  Segment length for Welch.  Default: T // 8.
     n_overlap : int, optional  Overlap.  Default: n_per_seg // 2.
-    iqr_factor : float, optional
-        If given, remove outlier samples via IQR gating before computing.
-    max_abs : float, optional
-        If given, remove samples whose max |value| exceeds this threshold.
-
     Returns
     -------
     PSDResult
     """
-    data = _maybe_filter(data, iqr_factor, max_abs)
     data = np.asarray(data, dtype=np.float64)
     N, T, F = data.shape
     fs = 1.0 / dt

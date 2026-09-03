@@ -101,7 +101,7 @@ def jonswap_spectrum(
     # Build the PM base spectrum with unit Hs, then apply JONSWAP peak
     # enhancement and re-scale to match the requested Hs exactly.
     # This avoids the Goda (1999) A_gamma approximation which is only
-    # accurate for gamma ≈ 2–7 and breaks down at gamma = 1.
+    # accurate for gamma ≈ 2-7 and breaks down at gamma = 1.
     alpha_unit = wp**4 / 5.0  # PM alpha for Hs=1
     S_pm = (alpha_unit / omega**5) * np.exp(-1.25 * (wp / omega) ** 4)
     G = gamma ** np.exp(-0.5 * ((omega - wp) / (sigma * wp)) ** 2)
@@ -346,7 +346,7 @@ def _encounter_correction_deep(
     """Deep-water encounter-frequency correction (Aranha/OrcaFlex/Molin).
 
     Computes modified frequency, heading, and amplitude scaling factor
-    for wave drift damping in deep water (Eqs. 7–9 from the OrcaFlex
+    for wave drift damping in deep water (Eqs. 7-9 from the OrcaFlex
     formulation).
 
     Parameters
