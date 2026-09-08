@@ -1,6 +1,22 @@
-# Efficient Probabilistic Forecasting of Dynamic Positioning Behaviour
+# Feasibility of a machine-learned surrogate model for uncertainty quantification of time-domain dynamic positioning forecasts
 
 MSc thesis, Marine Technology, Delft University of Technology — in collaboration with Allseas Engineering BV.
+
+Author(s)
+- A.W.N. Aperghis (TU Delft - Mechanical Engineering)
+
+Contributor(s)
+- Gabriel D. Weymouth – Mentor (TU Delft - Mechanical Engineering)
+- Niels Mallon – Mentor (Allseas Engineering)
+- Bob van der Heijden – Mentor (Allseas Engineering)
+- Helio Bailly Guimaraes – Mentor (Allseas Engineering)
+- A. Coraddu – Graduation committee member (TU Delft - Mechanical Engineering)
+- R.P. Dwight – Graduation committee member (TU Delft - Aerospace Engineering)
+Faculty
+- Mechanical Engineering
+
+
+The full report can be found at the [TU Delft Repository](https://resolver.tudelft.nl/uuid:090f44ec-93c5-48f8-bc29-9acbb94cc310)
 
 ## Abstract
 
