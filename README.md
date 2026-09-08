@@ -53,7 +53,7 @@ Training runs, checkpoints, and figures are tracked with [MLflow](https://mlflow
 Requires Python ≥ 3.11, < 3.14 and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/AAperghis/DP_Neural_SDEs
 cd DP_Neural_SDEs
 uv sync            # default: JAX with CUDA 12 support
 ```
