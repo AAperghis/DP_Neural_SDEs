@@ -261,6 +261,9 @@ def _serialize(obj):
     """Recursively convert dataclass / enum / jtp.ArrayLike to JSON-safe types."""
     if isinstance(obj, Enum):
         return {"__enum__": type(obj).__name__, "value": obj.value}
+    # Plain Python scalars also match jtp.ArrayLike but have no dtype/ndim
+    if obj is None or isinstance(obj, (bool, int, float, str)):
+        return obj
     if isinstance(obj, jtp.ArrayLike):
         if jnp.issubdtype(obj.dtype, jnp.integer) and obj.ndim == 0:
             return None  # Drop scalar integer arrays (legacy PRNG keys)
