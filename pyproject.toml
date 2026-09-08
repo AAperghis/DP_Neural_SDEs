@@ -58,6 +58,7 @@ dev = [
     "ipykernel>=7.2.0",
     "pip-licenses>=5.5.5",
     "license-audit>=0.12.1",
+    "pytest>=8.0",
 ]
 cpu = ["jax>=0.9.0",
       {include-group = "dev"}]
@@ -85,4 +86,8 @@ ignore = ["E731"]
 
 [tool.ruff]
 exclude = ["*.ipynb"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
 
