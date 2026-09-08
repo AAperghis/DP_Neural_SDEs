@@ -35,21 +35,14 @@ def consolidate(
 ) -> Path:
     """Merge individual parquet files into a single consolidated file.
 
-    Parameters
-    ----------
-    input_dir : Path
-        Directory containing individual per-run parquet files.
-    output_path : Path
-        Destination path for the consolidated file.
-    meta_key : str
-        Schema metadata key containing the per-run JSON config.
-    columns : list[str] | None
-        If given, only keep these columns (plus ``t``).  By default all
-        columns are preserved.
+    Args:
+        input_dir: Directory containing individual per-run parquet files.
+        output_path: Destination path for the consolidated file.
+        meta_key: Schema metadata key containing the per-run JSON config.
+        columns: If given, only keep these columns (plus ``t``).  By default
+            all columns are preserved.
 
-    Returns
-    -------
-    Path
+    Returns:
         The *output_path* that was written.
     """
     input_dir = Path(input_dir)

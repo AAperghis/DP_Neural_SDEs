@@ -36,23 +36,16 @@ def ocean_current(
 ) -> tuple[NDArray, NDArray]:
     """Irrotational ocean current in the body frame.
 
-    Parameters
-    ----------
-    Vc : float
-        Current speed (m/s).
-    betaVc : float
-        Current direction in NED (rad).
-    psi : float
-        Vessel heading (rad).
-    nu_ang : NDArray
-        Angular body velocities ``[p, q, r]``.
+    Args:
+        Vc: Current speed (m/s).
+        betaVc: Current direction in NED (rad).
+        psi: Vessel heading (rad).
+        nu_ang: Angular body velocities ``[p, q, r]``.
 
-    Returns
-    -------
-    nu_c : NDArray
-        6-DOF current velocity in body frame.
-    nu_c_dot : NDArray
-        Time derivative of ``nu_c`` (due to vessel rotation in current).
+    Returns:
+        Tuple of ``(nu_c, nu_c_dot)``: the 6-DOF current velocity in the
+        body frame, and the time derivative of ``nu_c`` (due to vessel
+        rotation in current).
     """
     v_c = np.array(
         [
@@ -79,20 +72,13 @@ def jonswap_spectrum(
 ) -> NDArray:
     """JONSWAP wave energy spectrum.
 
-    Parameters
-    ----------
-    omega : NDArray
-        Wave frequencies (rad/s).
-    Hs : float
-        Significant wave height (m).
-    Tp : float
-        Peak period (s).
-    gamma : float
-        Peak enhancement factor (default 3.3).
+    Args:
+        omega: Wave frequencies (rad/s).
+        Hs: Significant wave height (m).
+        Tp: Peak period (s).
+        gamma: Peak enhancement factor (default 3.3).
 
-    Returns
-    -------
-    S : NDArray
+    Returns:
         Spectral density values (m^2 s / rad).
     """
     wp = 2 * np.pi / Tp
@@ -149,19 +135,13 @@ def cos_spreading(
     loads, n should not be taken lower than 10. For fatigue assessment, where low and moderate sea states are governing
     the fatigue accumulation, n should be taken as the most unfavourable value between 2 and 6.
 
-    Parameters
-    ----------
-    theta : NDArray
-        Directional bins (rad).
-    theta0 : float
-        Mean wave direction (rad).
-    s : float
-        Spreading parameter.  ``s=1`` gives broad spreading,
-        ``s→∞`` approaches long-crested.
+    Args:
+        theta: Directional bins (rad).
+        theta0: Mean wave direction (rad).
+        s: Spreading parameter.  ``s=1`` gives broad spreading,
+            ``s→∞`` approaches long-crested.
 
-    Returns
-    -------
-    D : NDArray
+    Returns:
         Spreading weights (1/rad), same shape as *theta*.
     """
     from scipy.special import gamma as gammafn
@@ -188,19 +168,15 @@ class WaveDriftCoefficients:
     Each coefficient is defined as: (freq, heading) -> T_i, where T_i is the
     drift force coefficient for DOF *i*.
 
-
-    Attributes
-    ----------
-    omega : NDArray
-        Discrete frequencies at which coefficients are defined (rad/s).
-    headings : NDArray
-        Corresponding wave headings (rad) for the coefficients.
-    surge : NDArray
-        Drift force coefficient in surge (N/m^2) at each frequency and heading.
-    sway : NDArray
-        Drift force coefficient in sway (N/m^2) at each frequency and heading.
-    yaw : NDArray
-        Drift moment coefficient in yaw (Nm/m^2) at each frequency and heading.
+    Attributes:
+        omega: Discrete frequencies at which coefficients are defined (rad/s).
+        headings: Corresponding wave headings (rad) for the coefficients.
+        surge: Drift force coefficient in surge (N/m^2) at each frequency and
+            heading.
+        sway: Drift force coefficient in sway (N/m^2) at each frequency and
+            heading.
+        yaw: Drift moment coefficient in yaw (Nm/m^2) at each frequency and
+            heading.
     """
 
     headings: NDArray = field(default_factory=lambda: np.array([]))
@@ -240,16 +216,11 @@ class ForceRAO:
     Stores amplitude and phase per DOF at discrete frequencies and headings.
     Shape of each array: ``(n_freq, n_heading)``.
 
-    Attributes
-    ----------
-    omega : NDArray
-        Discrete frequencies (rad/s).
-    headings : NDArray
-        Headings (rad).
-    amplitude : NDArray
-        RAO amplitudes, shape ``(6, n_freq, n_heading)``.
-    phase : NDArray
-        RAO phases (rad), shape ``(6, n_freq, n_heading)``.
+    Attributes:
+        omega: Discrete frequencies (rad/s).
+        headings: Headings (rad).
+        amplitude: RAO amplitudes, shape ``(6, n_freq, n_heading)``.
+        phase: RAO phases (rad), shape ``(6, n_freq, n_heading)``.
     """
 
     omega: NDArray = field(default_factory=lambda: np.array([]))
@@ -285,24 +256,15 @@ def first_order_wave_force(
     Computes:
         F_i(t) = sum_k  a_k * |H_i(omega_k, beta)| * cos(omega_k*t + phi_k + angle(H_i))
 
-    Parameters
-    ----------
-    rao : ForceRAO
-        Force RAO data.
-    wave_omega : NDArray
-        Wave component frequencies (rad/s), shape ``(n_freq,)``.
-    wave_amplitudes : NDArray
-        Wave component amplitudes (m), shape ``(n_freq,)``.
-    wave_phases : NDArray
-        Wave component random phases (rad), shape ``(n_freq,)``.
-    wave_heading : float
-        Wave heading (rad).
-    t : float
-        Current time (s).
+    Args:
+        rao: Force RAO data.
+        wave_omega: Wave component frequencies (rad/s), shape ``(n_freq,)``.
+        wave_amplitudes: Wave component amplitudes (m), shape ``(n_freq,)``.
+        wave_phases: Wave component random phases (rad), shape ``(n_freq,)``.
+        wave_heading: Wave heading (rad).
+        t: Current time (s).
 
-    Returns
-    -------
-    F : NDArray
+    Returns:
         First-order wave force for all 6 DOFs, shape ``(6,)``.
     """
     from scipy.interpolate import RegularGridInterpolator
@@ -349,29 +311,19 @@ def _encounter_correction_deep(
     for wave drift damping in deep water (Eqs. 7-9 from the OrcaFlex
     formulation).
 
-    Parameters
-    ----------
-    omega : NDArray
-        Absolute wave frequencies (rad/s), shape ``(n,)``.
-    wave_heading : float or NDArray
-        Absolute wave heading(s) (rad).  Scalar for long-crested seas,
-        or shape ``(n,)`` for short-crested seas.
-        Absolute wave heading (rad).
-    U : NDArray
-        Low-frequency vessel velocity minus current velocity at the QTF
-        origin, shape ``(2,)`` — ``[u_surge, u_sway]`` in NED aligned
-        with the wave direction frame.
-    g : float
-        Gravitational acceleration (m/s^2).
+    Args:
+        omega: Absolute wave frequencies (rad/s), shape ``(n,)``.
+        wave_heading: Absolute wave heading(s) (rad).  Scalar for
+            long-crested seas, or shape ``(n,)`` for short-crested seas.
+        U: Low-frequency vessel velocity minus current velocity at the QTF
+            origin, shape ``(2,)`` — ``[u_surge, u_sway]`` in NED aligned
+            with the wave direction frame.
+        g: Gravitational acceleration (m/s^2).
 
-    Returns
-    -------
-    A_e : NDArray
-        Aranha scaling factor, shape ``(n_freq,)``.
-    omega_e : NDArray
-        Encounter frequency (rad/s), shape ``(n_freq,)``.
-    beta_e : NDArray
-        Encounter heading (rad), shape ``(n_freq,)``.
+    Returns:
+        Tuple ``(A_e, omega_e, beta_e)``: the Aranha scaling factor,
+        encounter frequency (rad/s), and encounter heading (rad), each
+        shape ``(n_freq,)``.
     """
     U_L = U[0] * np.cos(wave_heading) + U[1] * np.sin(wave_heading)
     U_T = -U[0] * np.sin(wave_heading) + U[1] * np.cos(wave_heading)
@@ -415,38 +367,27 @@ def newman_drift_force(
     mean heading).  Each (frequency, direction) pair gets its own
     amplitude ``a_{ik} = a_i * sqrt(D(θ_k) * Δθ)`` and random phase.
 
-    Parameters
-    ----------
-    coeffs : WaveDriftCoefficients
-        Drift force coefficients with discrete frequencies and headings.
-    wave_omega : NDArray
-        Wave component frequencies (rad/s), shape ``(n_freq,)``.
-    wave_amplitudes : NDArray
-        Wave component amplitudes, shape ``(n_freq,)``.
-        These are the long-crested amplitudes (from the 1-D spectrum).
-    wave_phases : NDArray
-        Wave component random phases, shape ``(n_freq,)``.
-        For short-crested seas, unique phases per (freq, dir) are
-        generated deterministically from these seeds.
-    wave_heading : float
-        Mean wave heading (rad).
-    t : float
-        Current time (s).
-    U : NDArray or None
-        Low-frequency vessel velocity minus current velocity,
-        shape ``(2,)`` — ``[u_surge, u_sway]`` in the NED frame.
-        If None, wave drift damping is not applied.
-    spreading_s : float or None
-        Spreading parameter *s* for cos-2s function.  If None,
-        long-crested seas are used (no spreading).
-    spreading_dirs : NDArray or None
-        Directional bins (rad) for the spreading discretisation.
-        Default (if None and spreading_s is set): 36 bins over
-        [wave_heading − π, wave_heading + π).
+    Args:
+        coeffs: Drift force coefficients with discrete frequencies and
+            headings.
+        wave_omega: Wave component frequencies (rad/s), shape ``(n_freq,)``.
+        wave_amplitudes: Wave component amplitudes, shape ``(n_freq,)``.
+            These are the long-crested amplitudes (from the 1-D spectrum).
+        wave_phases: Wave component random phases, shape ``(n_freq,)``.
+            For short-crested seas, unique phases per (freq, dir) are
+            generated deterministically from these seeds.
+        wave_heading: Mean wave heading (rad).
+        t: Current time (s).
+        U: Low-frequency vessel velocity minus current velocity, shape
+            ``(2,)`` — ``[u_surge, u_sway]`` in the NED frame. If None,
+            wave drift damping is not applied.
+        spreading_s: Spreading parameter *s* for cos-2s function.  If None,
+            long-crested seas are used (no spreading).
+        spreading_dirs: Directional bins (rad) for the spreading
+            discretisation. Default (if None and spreading_s is set): 36
+            bins over [wave_heading − π, wave_heading + π).
 
-    Returns
-    -------
-    F_drift : NDArray
+    Returns:
         Slowly-varying drift force for surge, sway, yaw — shape ``(3,)``.
     """
     from scipy.interpolate import RegularGridInterpolator

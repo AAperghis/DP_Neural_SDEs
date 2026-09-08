@@ -84,11 +84,9 @@ def ssa(angle: float) -> float:
 def rk4(f, h: float, x: NDArray, *args, t_idx: int | None = None) -> NDArray:
     """Classic 4th-order Runge-Kutta step.
 
-    Parameters
-    ----------
-    t_idx : int | None
-        Index into *args* that carries the current time.  When set the
-        integrator evaluates k2/k3 at t + h/2 and k4 at t + h.
+    Args:
+        t_idx: Index into *args* that carries the current time.  When set
+            the integrator evaluates k2/k3 at t + h/2 and k4 at t + h.
     """
     if t_idx is None:
         k1 = f(x, *args)

@@ -362,14 +362,11 @@ class BaseParquetDataset(ABC):
         conditioning vector therefore has width
         ``len(wave_keys) + len(angular_wave_keys)``.
 
-        Parameters
-        ----------
-        metas_iter : iterable of (id, dict)
-            Yields ``(series_id, metadata_dict)`` pairs.
-        wave_keys : list[str]
-            Keys to extract from each metadata dict, in output order.
-        angular_wave_keys : list[str], optional
-            Subset of ``wave_keys`` to encode as ``(cos, sin)``.
+        Args:
+            metas_iter: Iterable yielding ``(series_id, metadata_dict)`` pairs.
+            wave_keys: Keys to extract from each metadata dict, in output order.
+            angular_wave_keys: Subset of ``wave_keys`` to encode as
+                ``(cos, sin)``.
         """
         angular = set(angular_wave_keys or ())
         non_angular = [k for k in wave_keys if k not in angular]

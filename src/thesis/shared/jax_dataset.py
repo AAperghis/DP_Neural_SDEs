@@ -53,42 +53,27 @@ class MultiFileDataset(BaseParquetDataset):
     When wave parameters are not present in the file metadata, a zero
     vector is returned for ``wave_cond``.
 
-    Parameters
-    ----------
-    files : sequence of Path
-        One parquet file per run / ensemble member.
-    columns : list, optional
-        Feature columns to load.  ``'time'`` is always prepended.
-    wave_keys : list[str], optional
-        Metadata keys to extract as wave conditioning
-        (default ``["Hs", "Tp", "beta_wave"]``).
-    sample_length : int, optional
-        Window length in raw timesteps (before resampling).
-    resample_every : int, optional
-        Keep every k-th row.
-    resample_dt : float, optional
-        Target dt; step is computed from the base dt in the data.
-    standardise : bool
-        Z-score standardise features.
-    standardise_dict : dict, optional
-        Pre-computed ``{"mean": ..., "std": ...}`` arrays.
-    meta_key : str
-        Schema metadata key for per-file JSON config.
-    cache_size : int
-        Number of files to cache in RAM (0 = no cache).
-    dtype : jnp.dtype
-        JAX dtype for returned arrays.
-    truncate_seconds : float
-        Discard this many seconds from the start of each file.
-    group_scaling : bool
-        Pool standardisation within scaling groups.
-    n_runs : int | None
-        If smaller than the number of (filtered) files, draw a random subset
-        of that many files using a fixed seed.  ``None`` / <= 0 / >= available
-        uses all files.
-    filter_fn : callable, optional
-        Predicate ``(meta_dict) -> bool`` applied per-file metadata; only files
-        for which it returns ``True`` are kept.
+    Args:
+        files: One parquet file per run / ensemble member.
+        columns: Feature columns to load.  ``'time'`` is always prepended.
+        wave_keys: Metadata keys to extract as wave conditioning
+            (default ``["Hs", "Tp", "beta_wave"]``).
+        sample_length: Window length in raw timesteps (before resampling).
+        resample_every: Keep every k-th row.
+        resample_dt: Target dt; step is computed from the base dt in the data.
+        standardise: Z-score standardise features.
+        standardise_dict: Pre-computed ``{"mean": ..., "std": ...}`` arrays.
+        meta_key: Schema metadata key for per-file JSON config.
+        cache_size: Number of files to cache in RAM (0 = no cache).
+        dtype: JAX dtype for returned arrays.
+        truncate_seconds: Discard this many seconds from the start of each
+            file.
+        group_scaling: Pool standardisation within scaling groups.
+        n_runs: If smaller than the number of (filtered) files, draw a random
+            subset of that many files using a fixed seed.  ``None`` / <= 0 /
+            >= available uses all files.
+        filter_fn: Predicate ``(meta_dict) -> bool`` applied per-file
+            metadata; only files for which it returns ``True`` are kept.
     """
 
     def __init__(

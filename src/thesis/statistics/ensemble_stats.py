@@ -25,16 +25,16 @@ log = logging.getLogger(__name__)
 class MomentResult:
     """Results from ensemble moment computation.
 
-    Attributes
-    ----------
-    mean_t : (T, F) — ensemble mean at each timestep.
-    var_t : (T, F) — ensemble variance at each timestep.
-    skew_t : (T, F) — ensemble skewness at each timestep.
-    kurt_t : (T, F) — ensemble excess kurtosis at each timestep.
-    mean_scalar : (F,) — time-averaged ensemble mean (stationary summary).
-    var_scalar : (F,) — time-averaged ensemble variance.
-    skew_scalar : (F,) — time-averaged ensemble skewness.
-    kurt_scalar : (F,) — time-averaged ensemble kurtosis.
+    Attributes:
+        mean_t: Ensemble mean at each timestep, shape ``(T, F)``.
+        var_t: Ensemble variance at each timestep, shape ``(T, F)``.
+        skew_t: Ensemble skewness at each timestep, shape ``(T, F)``.
+        kurt_t: Ensemble excess kurtosis at each timestep, shape ``(T, F)``.
+        mean_scalar: Time-averaged ensemble mean (stationary summary), shape
+            ``(F,)``.
+        var_scalar: Time-averaged ensemble variance, shape ``(F,)``.
+        skew_scalar: Time-averaged ensemble skewness, shape ``(F,)``.
+        kurt_scalar: Time-averaged ensemble kurtosis, shape ``(F,)``.
     """
 
     mean_t: np.ndarray
@@ -52,17 +52,11 @@ def ensemble_moments(
 ) -> MomentResult:
     """Compute time-resolved and scalar ensemble moments.
 
-    Parameters
-    ----------
-    data : (N, T, F) array
-    iqr_factor : float, optional
-        If given, remove outlier samples via IQR gating before computing.
-    max_abs : float, optional
-        If given, remove samples whose max |value| exceeds this threshold.
+    Args:
+        data: Ensemble of time-series, shape ``(N, T, F)``.
 
-    Returns
-    -------
-    MomentResult
+    Returns:
+        The computed moments.
     """
     data = np.asarray(data, dtype=np.float64)
 
@@ -102,14 +96,13 @@ def ensemble_moments(
 def footprint_radius(data: np.ndarray, ix_eta_x: int, ix_eta_y: int) -> np.ndarray:
     """Per-sample maximum excursion radius sqrt(eta_x^2 + eta_y^2).
 
-    Parameters
-    ----------
-    data : (N, T, F)
-    ix_eta_x, ix_eta_y : int  Feature indices for eta_x and eta_y.
+    Args:
+        data: Ensemble of time-series, shape ``(N, T, F)``.
+        ix_eta_x: Feature index for eta_x.
+        ix_eta_y: Feature index for eta_y.
 
-    Returns
-    -------
-    (N,) array of max radii.
+    Returns:
+        Max radii, shape ``(N,)``.
     """
     r = np.sqrt(data[:, :, ix_eta_x] ** 2 + data[:, :, ix_eta_y] ** 2)  # (N, T)
     return np.max(r, axis=1)  # (N,)
@@ -124,21 +117,16 @@ def footprint_radius(data: np.ndarray, ix_eta_x: int, ix_eta_y: int) -> np.ndarr
 class CrossCorrelationResult:
     """Pearson correlation structure between features, averaged over ensemble.
 
-    How to read this
-    ----------------
     ``corr_mean[i, j]`` is the average Pearson correlation between feature *i*
     and feature *j*, computed per realisation then averaged across the ensemble.
     A perfect model reproduces the full (F, F) matrix of the reference data.
 
-    Comparison helpers
-    ------------------
     Use :func:`cross_correlation_error` to get a single scalar distance
     (Frobenius norm of the difference) between two correlation matrices.
 
-    Attributes
-    ----------
-    corr_mean : (F, F) — ensemble-mean correlation matrix.
-    corr_std : (F, F) — ensemble std of correlation coefficients.
+    Attributes:
+        corr_mean: Ensemble-mean correlation matrix, shape ``(F, F)``.
+        corr_std: Ensemble std of correlation coefficients, shape ``(F, F)``.
     """
 
     corr_mean: np.ndarray
@@ -153,14 +141,12 @@ def ensemble_cross_correlation(
     For each realisation the (F, F) correlation matrix is computed over
     the time axis, then the matrices are averaged across realisations.
 
-    Parameters
-    ----------
-    data : (N, T, F)
-        Ensemble of time-series.  N = realisations, T = time steps,
-        F = features.
-    Returns
-    -------
-    CrossCorrelationResult
+    Args:
+        data: Ensemble of time-series, shape ``(N, T, F)``. N = realisations,
+            T = time steps, F = features.
+
+    Returns:
+        The ensemble-averaged correlation structure.
     """
     data = np.asarray(data, dtype=np.float64)
     N, T, F = data.shape
@@ -186,13 +172,12 @@ def cross_correlation_error(corr_a: np.ndarray, corr_b: np.ndarray) -> float:
     The Frobenius norm is normalised by the number of unique off-diagonal
     pairs so the result is interpretable as a *mean absolute entry error*.
 
-    Parameters
-    ----------
-    corr_a, corr_b : (F, F) correlation matrices.
+    Args:
+        corr_a: First ``(F, F)`` correlation matrix.
+        corr_b: Second ``(F, F)`` correlation matrix.
 
-    Returns
-    -------
-    float — normalised Frobenius distance.
+    Returns:
+        Normalised Frobenius distance.
     """
     diff = corr_a - corr_b
     F = diff.shape[0]
@@ -211,18 +196,18 @@ def cross_correlation_error(corr_a: np.ndarray, corr_b: np.ndarray) -> float:
 class PSDResult:
     """Results from power spectral density analysis.
 
-    Attributes
-    ----------
-    freqs : (K,) — frequency vector in Hz.
-    psd_mean : (K, F) — ensemble-averaged PSD.
-    psd_std : (K, F) — ensemble std of PSD.
-    m0 : (F,) — zeroth spectral moment (mean square).
-    m2 : (F,) — second spectral moment.
-    m4 : (F,) — fourth spectral moment.
-    significant : (F,) — significant value = 4*sqrt(m0).
-    Tz : (F,) — mean zero-crossing period = sqrt(m0/m2).
-    bandwidth : (F,) — spectral bandwidth ε = sqrt(1 - m2^2/(m0*m4)).
-    f_peak : (F,) — peak frequency per feature.
+    Attributes:
+        freqs: Frequency vector in Hz, shape ``(K,)``.
+        psd_mean: Ensemble-averaged PSD, shape ``(K, F)``.
+        psd_std: Ensemble std of PSD, shape ``(K, F)``.
+        m0: Zeroth spectral moment (mean square), shape ``(F,)``.
+        m2: Second spectral moment, shape ``(F,)``.
+        m4: Fourth spectral moment, shape ``(F,)``.
+        significant: Significant value = 4*sqrt(m0), shape ``(F,)``.
+        Tz: Mean zero-crossing period = sqrt(m0/m2), shape ``(F,)``.
+        bandwidth: Spectral bandwidth ε = sqrt(1 - m2^2/(m0*m4)), shape
+            ``(F,)``.
+        f_peak: Peak frequency per feature, shape ``(F,)``.
     """
 
     freqs: np.ndarray
@@ -245,15 +230,14 @@ def ensemble_psd(
 ) -> PSDResult:
     """Compute ensemble-averaged PSD via Welch's method.
 
-    Parameters
-    ----------
-    data : (N, T, F)
-    dt : float  Sampling interval in seconds.
-    n_per_seg : int, optional  Segment length for Welch.  Default: T // 8.
-    n_overlap : int, optional  Overlap.  Default: n_per_seg // 2.
-    Returns
-    -------
-    PSDResult
+    Args:
+        data: Ensemble of time-series, shape ``(N, T, F)``.
+        dt: Sampling interval in seconds.
+        n_per_seg: Segment length for Welch.  Default: ``T // 8``.
+        n_overlap: Overlap.  Default: ``n_per_seg // 2``.
+
+    Returns:
+        The computed spectral distribution.
     """
     data = np.asarray(data, dtype=np.float64)
     N, T, F = data.shape

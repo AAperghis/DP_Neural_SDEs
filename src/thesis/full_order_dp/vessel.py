@@ -207,24 +207,15 @@ class OSV:
     ) -> NDArray:
         """Evaluate the 6-DOF equations of motion.
 
-        Parameters
-        ----------
-        x : NDArray
-            State vector ``[nu(6), eta(6)]``.
-        ui : NDArray
-            Control input ``[n(4), alpha(2)]``.
-        Vc : float
-            Ocean current speed (m/s).
-        betaVc : float
-            Current direction in NED (rad).
-        t : float
-            Current simulation time (s). Used for wave drift forces.
-        beta_wave : float
-            Wave direction in NED (rad).
+        Args:
+            x: State vector ``[nu(6), eta(6)]``.
+            ui: Control input ``[n(4), alpha(2)]``.
+            Vc: Ocean current speed (m/s).
+            betaVc: Current direction in NED (rad).
+            t: Current simulation time (s). Used for wave drift forces.
+            beta_wave: Wave direction in NED (rad).
 
-        Returns
-        -------
-        xdot : NDArray
+        Returns:
             Time derivative ``[nu_dot(6), eta_dot(6)]``.
         """
         v = self.params

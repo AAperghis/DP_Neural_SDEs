@@ -17,26 +17,17 @@ class NominalDynamicsRO:
         """
         Initialize the reduced order DP model.
 
-        Parameters
-        ----------
-        M : jax.Array
-            Mass matrix of the vessel. 3DOF with surge, sway, and yaw.
-        D : jax.Array
-            Damping matrix of the vessel. 3DOF with surge, sway, and yaw.
-        n_max : jax.Array
-            Maximum actuator states (RPM or normalised).
-        thrust_matrix : jax.Array
-            Thruster configuration matrix mapping thruster forces to vessel forces.
-            tau = thrust_matrix @ (|n| * n).
-        w0 : float | jax.Array, optional
-            Natural frequency for PID pole placement (default is 0.1).
-        zeta : float | jax.Array, optional
-            Damping ratio for PID pole placement (default is 0.7).
-        T_n : float | jax.Array, optional
-            Actuator time constant (s). Mutually exclusive with ``n_rate``.
-        n_rate : float | jax.Array, optional
-            Maximum actuator slew rate (units/s). Converted to ``T_n = n_max / n_rate``.
-            Mutually exclusive with ``T_n``.
+        Args:
+            M: Mass matrix of the vessel. 3DOF with surge, sway, and yaw.
+            D: Damping matrix of the vessel. 3DOF with surge, sway, and yaw.
+            n_max: Maximum actuator states (RPM or normalised).
+            thrust_matrix: Thruster configuration matrix mapping thruster forces
+                to vessel forces. tau = thrust_matrix @ (|n| * n).
+            w0: Natural frequency for PID pole placement (default is 0.1).
+            zeta: Damping ratio for PID pole placement (default is 0.7).
+            T_n: Actuator time constant (s). Mutually exclusive with ``n_rate``.
+            n_rate: Maximum actuator slew rate (units/s). Converted to
+                ``T_n = n_max / n_rate``. Mutually exclusive with ``T_n``.
         """
         if cfg.T_n is not None and cfg.n_rate is not None:
             raise ValueError("Specify either T_n or n_rate, not both.")
@@ -93,15 +84,12 @@ class NominalDynamicsRO:
         """
         Compute the time derivative of the state vector.
 
-        Parameters
-        ----------
-        x : jax.Array
-            State vector containing [eta, nu, n], where eta is the position and orientation,
-            nu is the velocity, and n is the thruster actuator states.
+        Args:
+            x: State vector containing [eta, nu, n], where eta is the position
+                and orientation, nu is the velocity, and n is the thruster
+                actuator states.
 
-        Returns
-        -------
-        jax.Array
+        Returns:
             Time derivative of the state vector.
         """
         eta = x[0:3]

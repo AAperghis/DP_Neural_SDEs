@@ -19,13 +19,11 @@ def thruster_config(
 ) -> NDArray:
     """Thruster configuration matrix T_thr (3 x n_thrusters).
 
-    Parameters
-    ----------
-    alpha : list
-        Thruster types: ``'T'`` (tunnel), ``'M'`` (main propeller),
-        or a float (azimuth angle in rad).
-    l_x, l_y : list
-        Longitudinal and lateral positions of each thruster.
+    Args:
+        alpha: Thruster types: ``'T'`` (tunnel), ``'M'`` (main propeller),
+            or a float (azimuth angle in rad).
+        l_x: Longitudinal positions of each thruster.
+        l_y: Lateral positions of each thruster.
     """
     n = len(alpha)
     T = np.zeros((3, n))

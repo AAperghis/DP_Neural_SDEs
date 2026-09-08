@@ -32,41 +32,27 @@ class ConsolidatedDataset(BaseParquetDataset):
     ``wave_cond`` has shape ``(B, n_wave_params)`` and is min-max
     scaled to [0, 1].
 
-    Parameters
-    ----------
-    path : Path
-        Path to the consolidated parquet file.
-    columns : list, optional
-        Feature columns to load.  ``"t"`` is always loaded for timestamps.
-    wave_keys : list[str], optional
-        Metadata keys to extract as wave conditioning
-        (default ``["Hs", "Tp", "beta_wave"]``).
-    sample_length : int | None
-        Window length in raw timesteps (before resampling).
-    resample_every : int | None
-        Keep every k-th row.
-    resample_dt : float | None
-        Target dt; computes step from base dt in data.
-    standardise : bool
-        Whether to z-score standardise features.
-    standardise_dict : dict | None
-        Pre-computed ``{"mean": ..., "std": ...}`` arrays.
-    truncate_seconds : float
-        Drop this many seconds from the start of each run.
-    group_scaling : bool
-        Pool standardisation within scaling groups.
-    n_runs : int | None
-        If smaller than the number of available runs, draw a random subset of
-        that many runs (after filtering) using a fixed seed for
-        reproducibility.  ``None`` / <= 0 / >= the available count uses all
-        runs.
-    filter_fn : callable, optional
-        Predicate ``(meta_dict) -> bool`` applied per-run metadata.
-        Only runs for which *filter_fn* returns ``True`` are kept.
-    meta_key : str
-        Parquet schema key containing per-run metadata JSON.
-    dtype : jnp.dtype
-        JAX dtype for returned arrays.
+    Args:
+        path: Path to the consolidated parquet file.
+        columns: Feature columns to load.  ``"t"`` is always loaded for
+            timestamps.
+        wave_keys: Metadata keys to extract as wave conditioning
+            (default ``["Hs", "Tp", "beta_wave"]``).
+        sample_length: Window length in raw timesteps (before resampling).
+        resample_every: Keep every k-th row.
+        resample_dt: Target dt; computes step from base dt in data.
+        standardise: Whether to z-score standardise features.
+        standardise_dict: Pre-computed ``{"mean": ..., "std": ...}`` arrays.
+        truncate_seconds: Drop this many seconds from the start of each run.
+        group_scaling: Pool standardisation within scaling groups.
+        n_runs: If smaller than the number of available runs, draw a random
+            subset of that many runs (after filtering) using a fixed seed for
+            reproducibility.  ``None`` / <= 0 / >= the available count uses
+            all runs.
+        filter_fn: Predicate ``(meta_dict) -> bool`` applied per-run metadata.
+            Only runs for which *filter_fn* returns ``True`` are kept.
+        meta_key: Parquet schema key containing per-run metadata JSON.
+        dtype: JAX dtype for returned arrays.
     """
 
     def __init__(

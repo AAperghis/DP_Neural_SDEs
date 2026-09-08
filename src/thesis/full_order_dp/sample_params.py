@@ -69,25 +69,20 @@ def extract_bounds(
     capture the central (1 − 2·tail) mass rather than relying on an
     absolute density threshold.
 
-    Parameters
-    ----------
-    tps : np.ndarray
-        Peak period grid corresponding to the columns of *frequencies*.
-    hss : np.ndarray
-        Significant wave height grid corresponding to the rows of *frequencies*.
-    frequencies : np.ndarray
-        2D array of frequencies (probabilities) for each Hs-Tp bin.
-    hs_tail : float
-        Probability mass to trim from each tail of the Hs marginal.
-    tp_tail : float
-        Probability mass to trim from each tail of the Tp conditional.
+    Args:
+        tps: Peak period grid corresponding to the columns of *frequencies*.
+        hss: Significant wave height grid corresponding to the rows of
+            *frequencies*.
+        frequencies: 2D array of frequencies (probabilities) for each
+            Hs-Tp bin.
+        hs_tail: Probability mass to trim from each tail of the Hs marginal.
+        tp_tail: Probability mass to trim from each tail of the Tp
+            conditional.
 
-    Returns
-    -------
-    hs_lo, hs_hi : float
-        Hs bounds enclosing the central (1 − 2·hs_tail) mass.
-    tp_lo_fn, tp_hi_fn : callable(hs) -> float
-        Interpolators that return the Tp bounds for a given Hs.
+    Returns:
+        Tuple ``(hs_lo, hs_hi, tp_lo_fn, tp_hi_fn)``: the Hs bounds
+        enclosing the central (1 − 2·hs_tail) mass, and interpolators
+        ``callable(hs) -> float`` that return the Tp bounds for a given Hs.
     """
     from scipy.interpolate import interp1d
 
@@ -317,11 +312,10 @@ def dnv_parametric_scatter(
 
     Parameters default to Area 11 (North Sea).
 
-    Returns
-    -------
-    frequencies : NDArray, shape (len(hss), len(tps))
+    Returns:
         Joint probability density f(Hs, Tp) evaluated at the bin centres,
-        scaled to the same total as a scatter diagram (counts / 1000).
+        shape ``(len(hss), len(tps))``, scaled to the same total as a
+        scatter diagram (counts / 1000).
     """
     from scipy.stats import weibull_min, lognorm
 
@@ -377,10 +371,9 @@ def bivariate_scatter_li(
 
     .. math::
         $ f(H_s, T_p) = \int_0^\infty f(V_w)\,f(H_s|V_w)\,f(T_p|V_w,H_s)\;dV_w. $
-    Returns
-    -------
-    frequencies : NDArray, shape (len(hss), len(tps))
-        Joint density f(Hs, Tp) scaled to ~1000 total.
+    Returns:
+        Joint density f(Hs, Tp), shape ``(len(hss), len(tps))``, scaled to
+        ~1000 total.
     """
     from scipy.stats import weibull_min, lognorm
 
@@ -448,10 +441,9 @@ def trivariate_scatter_li(
     .. math::
         $ f(H_s, T_p) = \int_0^\infty f(V_w)\,f(H_s|V_w)\,f(T_p|V_w,H_s)\;dV_w. $
 
-    Returns
-    -------
-    frequencies : NDArray, shape (len(hss), len(tps))
-        Joint density f(Hs, Tp) scaled to ~1000 total.
+    Returns:
+        Joint density f(Hs, Tp), shape ``(len(hss), len(tps))``, scaled to
+        ~1000 total.
     """
     from scipy.stats import weibull_min, lognorm
 

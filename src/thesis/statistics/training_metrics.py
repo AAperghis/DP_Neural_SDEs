@@ -35,10 +35,8 @@ from thesis.statistics.extreme_values import EVResult, pot_extreme_values
 class TrainingStatsResult:
     """Container for training-time statistics comparison.
 
-    Attributes
-    ----------
-    metrics : dict[str, float]
-        Flat metric dict ready for MLflow logging.
+    Attributes:
+        metrics: Flat metric dict ready for MLflow logging.
     """
 
     metrics: dict[str, float]
@@ -75,25 +73,19 @@ def compute_training_stats(
 ) -> TrainingStatsResult:
     """Compare model samples against reference data across all metric families.
 
-    Parameters
-    ----------
-    model_data : (N_model, T, F)
-        Ensemble of model-generated trajectories (physical units).
-    ref_data : (N_ref, T, F)
-        Ensemble of reference (dataset) trajectories (physical units).
-    dt : float
-        Sampling interval in seconds.
-    feature_names : list[str], optional
-        Feature names for reporting. Defaults to f0, f1, ...
-    prefix : str
-        Prefix for all metric keys (e.g. "prior_stats" or "post_stats").
-    ref_cache : StatsRefCache, optional
-        Precomputed reference statistics. If provided, ``ref_data`` is only
-        used for per-feature distributional tests (Wasserstein, KS).
+    Args:
+        model_data: Ensemble of model-generated trajectories (physical units),
+            shape (N_model, T, F).
+        ref_data: Ensemble of reference (dataset) trajectories (physical
+            units), shape (N_ref, T, F).
+        dt: Sampling interval in seconds.
+        feature_names: Feature names for reporting. Defaults to f0, f1, ...
+        prefix: Prefix for all metric keys (e.g. "prior_stats" or "post_stats").
+        ref_cache: Precomputed reference statistics. If provided, ``ref_data``
+            is only used for per-feature distributional tests (Wasserstein, KS).
 
-    Returns
-    -------
-    TrainingStatsResult
+    Returns:
+        TrainingStatsResult
     """
     F = model_data.shape[2]
     if feature_names is None:
@@ -337,16 +329,12 @@ def precompute_stats_ref(
 def _truncated_signature(path: np.ndarray, depth: int = 3) -> np.ndarray:
     """Compute the truncated signature of a path via iterated integrals.
 
-    Parameters
-    ----------
-    path : (T, d)
-        Single multivariate time series.
-    depth : int
-        Truncation depth (1-4 recommended).
+    Args:
+        path: Single multivariate time series, shape (T, d).
+        depth: Truncation depth (1-4 recommended).
 
-    Returns
-    -------
-    sig : (D,)  where D = d + d² + … + d^depth
+    Returns:
+        sig: (D,) array, where D = d + d² + … + d^depth.
     """
     T, d = path.shape
     increments = np.diff(path, axis=0)  # (T-1, d)
@@ -389,20 +377,15 @@ def sweep_score(
       - ``conditioning``: |Δ corr(σ_η, Hs)| model vs ref (lower = better,
                           only if wave arrays supplied).
 
-    Parameters
-    ----------
-    model_data, ref_data : (N, T, F)
-        Ensembles in physical units.
-    dt : float
-        Sampling interval (seconds), unused here but kept for API compat.
-    eta_idx : slice
-        Which channels are η (default 0:3).
-    model_wave, ref_wave : (N, 3) optional
-        Sea-state [Hs, Tp, Dir] per sample for conditioning score.
-    sig_depth : int
-        Truncation depth for signatures (default 3).
-    ref_cache : SweepRefCache, optional
-        Precomputed reference quantities from ``precompute_sweep_ref``.
+    Args:
+        model_data, ref_data: Ensembles in physical units, shape (N, T, F).
+        dt: Sampling interval (seconds), unused here but kept for API compat.
+        eta_idx: Which channels are η (default 0:3).
+        model_wave, ref_wave: Sea-state [Hs, Tp, Dir] per sample for
+            conditioning score, shape (N, 3), optional.
+        sig_depth: Truncation depth for signatures (default 3).
+        ref_cache: Precomputed reference quantities from
+            ``precompute_sweep_ref``.
     """
     from scipy.spatial.distance import cdist
 
@@ -499,16 +482,13 @@ def compute_derived_quantities(
 
     Designed for cheap training-time evaluation — pure numpy, no fitting.
 
-    Parameters
-    ----------
-    data : (N, T, F)
-        Trajectories in **physical units**.
-    physics_config : FullOrderPhysicsConfig
-        Provides thruster geometry and index mapping.
+    Args:
+        data: Trajectories in **physical units**, shape (N, T, F).
+        physics_config: A ``FullOrderPhysicsConfig``; provides thruster
+            geometry and index mapping.
 
-    Returns
-    -------
-    dict mapping quantity name → (N, T) array.
+    Returns:
+        dict mapping quantity name → (N, T) array.
     """
     eta_ix = physics_config.eta_idx
     n_ix = list(physics_config.n_idx)
@@ -1175,12 +1155,10 @@ def plot_training_stats(
 ) -> tuple[plt.Figure, plt.Figure, plt.Figure]:
     """Plot training statistics for visual inspection.
 
-    Parameters
-    ----------
-    result : TrainingStatsResult
-        The result of compute_training_stats containing metrics and raw stats.
-    feature_names : list[str], optional
-        Feature names for labeling. Defaults to f0, f1, ...
+    Args:
+        result: The result of compute_training_stats containing metrics and
+            raw stats.
+        feature_names: Feature names for labeling. Defaults to f0, f1, ...
     """
     fig_moments, _ = ensemble_moments_plot(
         [result.mom["model"], result.mom["ref"]],

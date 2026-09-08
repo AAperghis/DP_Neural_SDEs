@@ -68,21 +68,15 @@ def plot_moments(
 ) -> tuple[plt.Figure, np.ndarray]:
     """Grouped bar chart comparing scalar moments across datasets.
 
-    Parameters
-    ----------
-    mom_results : list[MomentResult]
-        One entry per dataset.
-    feature_names : list[str], optional
-        Full feature name list (length F). Used for display labels
-        and unit look-up via ``FEATURE_REGISTRY``.
-    labels : list[str], optional
-        Legend label per dataset.  Defaults to "Dataset 0", …
-    feature_indices : sequence of int, optional
-        Indices of features to plot.  Defaults to all.
+    Args:
+        mom_results: One entry per dataset.
+        feature_names: Full feature name list (length F). Used for display
+            labels and unit look-up via ``FEATURE_REGISTRY``.
+        labels: Legend label per dataset.  Defaults to "Dataset 0", …
+        feature_indices: Indices of features to plot.  Defaults to all.
 
-    Returns
-    -------
-    (fig, axes)
+    Returns:
+        (fig, axes)
     """
     F_total = len(mom_results[0].mean_scalar)
     idx, names = _resolve_features(F_total, feature_names, feature_indices)
@@ -142,16 +136,12 @@ def plot_psd(
 ) -> tuple[plt.Figure, np.ndarray]:
     """Log-log PSD comparison per feature across datasets.
 
-    Parameters
-    ----------
-    psd_results : list[PSDResult]
-        One entry per dataset.
-    feature_names, labels, feature_indices
-        See :func:`plot_moments`.
+    Args:
+        psd_results: One entry per dataset.
+        feature_names, labels, feature_indices: See :func:`plot_moments`.
 
-    Returns
-    -------
-    (fig, axes)
+    Returns:
+        (fig, axes)
     """
     F_total = psd_results[0].psd_mean.shape[1]
     idx, names = _resolve_features(F_total, feature_names, feature_indices)
@@ -218,16 +208,12 @@ def plot_maxima(
 ) -> tuple[plt.Figure, np.ndarray]:
     """Overlaid histograms of per-sample maxima with POT compound-max PDF overlay.
 
-    Parameters
-    ----------
-    max_results : list[EVResult]
-        One entry per dataset.
-    feature_names, labels, feature_indices
-        See :func:`plot_moments`.
+    Args:
+        max_results: One entry per dataset.
+        feature_names, labels, feature_indices: See :func:`plot_moments`.
 
-    Returns
-    -------
-    (fig, axes)
+    Returns:
+        (fig, axes)
     """
     F_total = len(max_results[0])
     idx, names = _resolve_features(F_total, feature_names, feature_indices)
@@ -324,20 +310,15 @@ def plot_cross_correlation(
     panel shows the element-wise difference (dataset 0 − dataset 1) so
     you can immediately see which feature pairs the model gets wrong.
 
-    Parameters
-    ----------
-    xcorr_results : list[CrossCorrelationResult]
-        One entry per dataset (typically [model, reference]).
-    feature_names : list[str], optional
-        Display labels for the axes.  Defaults to f0, f1, …
-    labels : list[str], optional
-        Legend / title label per dataset.
-    show_difference : bool
-        If True and exactly two datasets are given, add a difference panel.
+    Args:
+        xcorr_results: One entry per dataset (typically [model, reference]).
+        feature_names: Display labels for the axes.  Defaults to f0, f1, …
+        labels: Legend / title label per dataset.
+        show_difference: If True and exactly two datasets are given, add a
+            difference panel.
 
-    Returns
-    -------
-    (fig, axes)
+    Returns:
+        (fig, axes)
     """
     n_ds = len(xcorr_results)
     F = xcorr_results[0].corr_mean.shape[0]

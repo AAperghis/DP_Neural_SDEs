@@ -105,21 +105,16 @@ def load_member(
 ) -> tuple[FullHybridSDE | ReducedHybridSDE, HyperParameters]:
     """Load a single trained model from a checkpoint.
 
-    Parameters
-    ----------
-    ckpt_source:
-        Either a local path to a ``.eqx`` weights file, or an MLflow run ID
-        (no path separator) — the artifact ``checkpoint/final.eqx`` will be
-        downloaded automatically.
-    hp_source:
-        Either a local path to a ``hyperparams.json`` file, or an MLflow run
-        ID — the artifact ``hyperparams.json`` will be downloaded.
-    key:
-        PRNG key used to initialise the template before loading weights.
+    Args:
+        ckpt_source: Either a local path to a ``.eqx`` weights file, or an
+            MLflow run ID (no path separator) — the artifact
+            ``checkpoint/final.eqx`` will be downloaded automatically.
+        hp_source: Either a local path to a ``hyperparams.json`` file, or an
+            MLflow run ID — the artifact ``hyperparams.json`` will be
+            downloaded.
+        key: PRNG key used to initialise the template before loading weights.
 
-    Returns
-    -------
-    tuple
+    Returns:
         ``(model, hyperparams)`` — the loaded model and its parsed
         :class:`~thesis.shared.data_structures.HyperParameters`.
     """
@@ -143,15 +138,12 @@ class DeepEnsemble:
     :meth:`sample_posterior`.  All members must share the same architecture
     (same ``HyperParameters`` schema) but have different initialised weights.
 
-    Parameters
-    ----------
-    models:
-        List of loaded model instances.
-    hyperparams:
-        Shared hyper-parameters (architecture only; training config is ignored
-        at inference time).
-    member_ids:
-        Human-readable identifier for each member (e.g. run ID or file stem).
+    Args:
+        models: List of loaded model instances.
+        hyperparams: Shared hyper-parameters (architecture only; training
+            config is ignored at inference time).
+        member_ids: Human-readable identifier for each member (e.g. run ID or
+            file stem).
     """
 
     def __init__(
@@ -196,24 +188,19 @@ class DeepEnsemble:
     ) -> "DeepEnsemble":
         """Load ensemble members from local ``.eqx`` checkpoint files.
 
-        Parameters
-        ----------
-        ckpt_paths:
-            Paths to each member's ``.eqx`` weights file.
-        hp_path:
-            Either a single ``hyperparams.json`` shared by all members, or a
-            sequence of per-member paths (same length as *ckpt_paths*).
-        keys:
-            PRNG keys for template initialisation — one per member.  If
-            ``None``, keys are derived from ``jr.key(0)`` by folding in the
-            member index.
-        member_ids:
-            Identifiers for each member.  Defaults to the file stem of each
-            checkpoint path.
+        Args:
+            ckpt_paths: Paths to each member's ``.eqx`` weights file.
+            hp_path: Either a single ``hyperparams.json`` shared by all
+                members, or a sequence of per-member paths (same length as
+                *ckpt_paths*).
+            keys: PRNG keys for template initialisation — one per member.
+                If ``None``, keys are derived from ``jr.key(0)`` by folding
+                in the member index.
+            member_ids: Identifiers for each member.  Defaults to the file
+                stem of each checkpoint path.
 
-        Returns
-        -------
-        DeepEnsemble
+        Returns:
+            The loaded ensemble.
         """
         ckpt_paths = [Path(p) for p in ckpt_paths]
         n = len(ckpt_paths)
@@ -263,21 +250,16 @@ class DeepEnsemble:
     ) -> "DeepEnsemble":
         """Load ensemble members from MLflow artifact stores.
 
-        Parameters
-        ----------
-        run_ids:
-            MLflow run IDs, one per member.
-        artifact_ckpt:
-            Artifact path for the weights file within each run.
-        artifact_hp:
-            Artifact path for the hyperparameters file within each run.
-        keys:
-            PRNG keys for template initialisation.  Defaults to folding the
-            member index into ``jr.key(0)``.
+        Args:
+            run_ids: MLflow run IDs, one per member.
+            artifact_ckpt: Artifact path for the weights file within each run.
+            artifact_hp: Artifact path for the hyperparameters file within
+                each run.
+            keys: PRNG keys for template initialisation.  Defaults to
+                folding the member index into ``jr.key(0)``.
 
-        Returns
-        -------
-        DeepEnsemble
+        Returns:
+            The loaded ensemble.
         """
         import mlflow
 
@@ -354,31 +336,27 @@ class DeepEnsemble:
     ) -> ModelEnsemble:
         """Sample prior trajectories from every ensemble member.
 
-        Parameters
-        ----------
-        ts:
-            Time points, shape ``(T,)``.
-        n_trajectories:
-            Number of independent trajectories to draw per member.
-        key:
-            PRNG key; split across members and trajectories automatically.
-        wave_cond:
-            Sea-state conditioning vector, shape ``(n_wave_params,)``.
-            Required for :class:`~thesis.full_hybrid_sde.model.FullHybridSDE`
-            members; silently ignored by
-            :class:`~thesis.reduced_hybrid_sde.model.ReducedHybridSDE`.
-        unscale:
-            Return trajectories in physical units when ``True`` (default).
-        common_noise:
-            If ``True``, every member receives the same PRNG key so their
-            Brownian paths are identical.  Differences in output are then
-            solely due to model weights.  If ``False`` (default), each member
-            gets an independent key.
+        Args:
+            ts: Time points, shape ``(T,)``.
+            n_trajectories: Number of independent trajectories to draw per
+                member.
+            key: PRNG key; split across members and trajectories
+                automatically.
+            wave_cond: Sea-state conditioning vector, shape
+                ``(n_wave_params,)``. Required for
+                :class:`~thesis.full_hybrid_sde.model.FullHybridSDE` members;
+                silently ignored by
+                :class:`~thesis.reduced_hybrid_sde.model.ReducedHybridSDE`.
+            unscale: Return trajectories in physical units when ``True``
+                (default).
+            common_noise: If ``True``, every member receives the same PRNG
+                key so their Brownian paths are identical.  Differences in
+                output are then solely due to model weights.  If ``False``
+                (default), each member gets an independent key.
 
-        Returns
-        -------
-        ModelEnsemble
-            ``data`` has shape ``(N_members, n_trajectories, T, F)``.
+        Returns:
+            A :class:`ModelEnsemble` whose ``data`` has shape
+            ``(N_members, n_trajectories, T, F)``.
         """
         stacked = self._stacked_model()
         member_keys = self._member_keys(key, common_noise)
@@ -445,35 +423,29 @@ class DeepEnsemble:
         prior parameters.  Useful for visualising the deterministic "mean
         path" each member has learned.
 
-        Parameters
-        ----------
-        ts:
-            Time points, shape ``(T,)``.
-        key:
-            PRNG key used to sample the initial state ``(x0, z0)`` for each
-            member (ignored when *mean_initial_state* is ``True``).
-        wave_cond:
-            Sea-state conditioning vector, shape ``(n_wave_params,)``.
-            Required for :class:`~thesis.full_hybrid_sde.model.FullHybridSDE`.
-        unscale:
-            Return trajectories in physical units when ``True`` (default).
-        common_noise:
-            If ``True`` (default for ODE mode), every member uses the same
-            key to sample its initial state, making the starting points as
-            comparable as possible.  Ignored when *mean_initial_state* is
-            ``True``.
-        mean_initial_state:
-            If ``True``, override each member's sampled ``(x0, z0)`` with
-            the element-wise mean of ``px0_mean`` and ``pz0_mean`` across
-            all members.  This pins the starting point to a single shared
-            value so that the only source of spread between trajectories is
-            the learned drift function.
+        Args:
+            ts: Time points, shape ``(T,)``.
+            key: PRNG key used to sample the initial state ``(x0, z0)`` for
+                each member (ignored when *mean_initial_state* is ``True``).
+            wave_cond: Sea-state conditioning vector, shape
+                ``(n_wave_params,)``. Required for
+                :class:`~thesis.full_hybrid_sde.model.FullHybridSDE`.
+            unscale: Return trajectories in physical units when ``True``
+                (default).
+            common_noise: If ``True`` (default for ODE mode), every member
+                uses the same key to sample its initial state, making the
+                starting points as comparable as possible.  Ignored when
+                *mean_initial_state* is ``True``.
+            mean_initial_state: If ``True``, override each member's sampled
+                ``(x0, z0)`` with the element-wise mean of ``px0_mean`` and
+                ``pz0_mean`` across all members.  This pins the starting
+                point to a single shared value so that the only source of
+                spread between trajectories is the learned drift function.
 
-        Returns
-        -------
-        ModelEnsemble
-            ``data`` has shape ``(N_members, 1, T, F)`` — one deterministic
-            trajectory per member.
+        Returns:
+            A :class:`ModelEnsemble` whose ``data`` has shape
+            ``(N_members, 1, T, F)`` — one deterministic trajectory per
+            member.
         """
         # Compute shared initial state if requested
         x0_override: jax.Array | None = None
@@ -535,30 +507,25 @@ class DeepEnsemble:
     ) -> ModelEnsemble:
         """Sample posterior trajectories conditioned on observations.
 
-        Parameters
-        ----------
-        xs:
-            Conditioning observations, shape ``(n_trajectories, T, F)`` in
-            standardised space.
-        ts:
-            Time points corresponding to *xs*, shape ``(T,)``.
-        key:
-            PRNG key; split across members and trajectories automatically.
-        wave_cond:
-            Sea-state conditioning vector, shape ``(n_wave_params,)``.
-            Required for :class:`~thesis.full_hybrid_sde.model.FullHybridSDE`.
-        unscale:
-            Return trajectories in physical units when ``True`` (default).
-        common_noise:
-            If ``True``, every member receives the same PRNG key so their
-            Brownian paths are identical.  Differences in output are then
-            solely due to model weights.  If ``False`` (default), each member
-            gets an independent key.
+        Args:
+            xs: Conditioning observations, shape ``(n_trajectories, T, F)``
+                in standardised space.
+            ts: Time points corresponding to *xs*, shape ``(T,)``.
+            key: PRNG key; split across members and trajectories
+                automatically.
+            wave_cond: Sea-state conditioning vector, shape
+                ``(n_wave_params,)``. Required for
+                :class:`~thesis.full_hybrid_sde.model.FullHybridSDE`.
+            unscale: Return trajectories in physical units when ``True``
+                (default).
+            common_noise: If ``True``, every member receives the same PRNG
+                key so their Brownian paths are identical.  Differences in
+                output are then solely due to model weights.  If ``False``
+                (default), each member gets an independent key.
 
-        Returns
-        -------
-        ModelEnsemble
-            ``data`` has shape ``(N_members, n_trajectories, T, F)``.
+        Returns:
+            A :class:`ModelEnsemble` whose ``data`` has shape
+            ``(N_members, n_trajectories, T, F)``.
         """
         n_trajectories = xs.shape[0]
         stacked = self._stacked_model()

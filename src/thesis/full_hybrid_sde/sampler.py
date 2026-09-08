@@ -234,10 +234,9 @@ def _compute_stats(
 ) -> tuple[dict[str, str], dict[str, float]]:
     """Compute training statistics and sweep scores (runs in process pool).
 
-    Returns
-    -------
-    artifacts : dict mapping artifact paths to local file paths
-    metrics : flat dict of scalar metrics for MLflow
+    Returns:
+        artifacts: dict mapping artifact paths to local file paths
+        metrics: flat dict of scalar metrics for MLflow
     """
     matplotlib.use("Agg")
     from matplotlib import pyplot as plt

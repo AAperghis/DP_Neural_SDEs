@@ -76,28 +76,26 @@ def _ev_profile_report() -> None:
 class POTResult:
     """Result of the POT extreme-value pipeline for a single feature.
 
-    Plotting helpers
-    ----------------
-    Use :meth:`pdf` and :meth:`cdf` to evaluate the compound-Poisson max
-    distribution on an arbitrary grid.  A convenience :meth:`pdf_grid` returns
-    a ready-made (x, pdf) pair for quick plotting.
+    Plotting helpers:
+        Use :meth:`pdf` and :meth:`cdf` to evaluate the compound-Poisson max
+        distribution on an arbitrary grid.  A convenience :meth:`pdf_grid`
+        returns a ready-made (x, pdf) pair for quick plotting.
 
-    Attributes
-    ----------
-    shape : float — GPD shape parameter (ξ).
-    scale : float — GPD scale parameter (σ).
-    threshold : float — exceedance threshold *u*.
-    peak_rate : float — mean number of independent peaks per target duration.
-    decluster_lag : float — minimum separation between independent peaks (seconds).
-    correlation_time : float — ACF first zero-crossing (seconds).
-    n_peaks : int — total number of declustered peaks used for the fit.
-    mpm : float — most probable maximum (mode of the max-distribution PDF).
-    peaks : np.ndarray — raw peak values (1-D).
-    observed_maxima : np.ndarray — per-realisation observed maxima (1-D, length N).
-    ks_statistic : float — KS statistic of the compound-max CDF vs observed maxima.
-    ks_pvalue : float — KS p-value.
-    mpm_ci_low : float — lower 95 % bootstrap CI bound on MPM.
-    mpm_ci_high : float — upper 95 % bootstrap CI bound on MPM.
+    Attributes:
+        shape: GPD shape parameter (ξ).
+        scale: GPD scale parameter (σ).
+        threshold: Exceedance threshold *u*.
+        peak_rate: Mean number of independent peaks per target duration.
+        decluster_lag: Minimum separation between independent peaks (seconds).
+        correlation_time: ACF first zero-crossing (seconds).
+        n_peaks: Total number of declustered peaks used for the fit.
+        mpm: Most probable maximum (mode of the max-distribution PDF).
+        peaks: Raw peak values (1-D).
+        observed_maxima: Per-realisation observed maxima (1-D, length N).
+        ks_statistic: KS statistic of the compound-max CDF vs observed maxima.
+        ks_pvalue: KS p-value.
+        mpm_ci_low: Lower 95 % bootstrap CI bound on MPM.
+        mpm_ci_high: Upper 95 % bootstrap CI bound on MPM.
     """
 
     shape: float
@@ -146,10 +144,9 @@ class POTResult:
     ) -> tuple[np.ndarray, np.ndarray]:
         """Return ``(x, pdf)`` on a grid spanning the observed maxima range.
 
-        Parameters
-        ----------
-        n : int — number of grid points.
-        pad : float — fractional padding beyond the observed maxima range.
+        Args:
+            n: Number of grid points.
+            pad: Fractional padding beyond the observed maxima range.
         """
         lo = (
             self.observed_maxima.min() * (1 - pad)
@@ -177,10 +174,9 @@ class EVResult:
     Features where the GPD fit failed receive a fallback ``POTResult``
     with ``peak_rate=0`` and ``mpm`` set to the mean of observed maxima.
 
-    Attributes
-    ----------
-    features : dict mapping feature index → :class:`POTResult`.
-    n_features : int — total number of features.
+    Attributes:
+        features: Dict mapping feature index → :class:`POTResult`.
+        n_features: Total number of features.
     """
 
     features: dict[int, POTResult]
@@ -418,12 +414,11 @@ _GPD_SOLVER = optx.BFGS(rtol=1e-6, atol=1e-6)
 def _fit_mpm_batched_jax(exc, mask, x0s, th, lam):
     """Batched masked-GPD MLE (BFGS) + MPM grid over the whole batch.
 
-    Parameters
-    ----------
-    exc, mask : (M, L) — padded excess vectors and validity masks.
-    x0s       : (M, 2) — per-item initial ``[xi, log sigma]``.
-    th, lam   : (M,)   — per-item threshold and Poisson rate (traced, so distinct
-        values reuse the same compiled program).
+    Args:
+        exc, mask: Padded excess vectors and validity masks, shape (M, L).
+        x0s: Per-item initial ``[xi, log sigma]``, shape (M, 2).
+        th, lam: Per-item threshold and Poisson rate, shape (M,) (traced, so
+            distinct values reuse the same compiled program).
 
     Returns ``(xi, sigma, mpm)`` each of shape ``(M,)``.
     """
@@ -449,15 +444,13 @@ def acf_zero_crossing(
 ) -> float:
     """Mean-ACF first zero-crossing time (seconds) for one feature.
 
-    Parameters
-    ----------
-    data_2d : (N, T) — time series per realisation.
-    dt : float — sampling interval in seconds.
-    max_lag : int, optional — maximum lag in samples (default T // 2).
+    Args:
+        data_2d: Time series per realisation, shape (N, T).
+        dt: Sampling interval in seconds.
+        max_lag: Maximum lag in samples (default T // 2).
 
-    Returns
-    -------
-    tau_0 : float — first zero-crossing of the mean ACF, in seconds.
+    Returns:
+        First zero-crossing of the mean ACF, in seconds.
     """
     N, T = data_2d.shape
     if max_lag is None:
@@ -918,40 +911,37 @@ def pot_extreme_values(
 ) -> EVResult:
     """Run the full POT pipeline on an ``(N, T, F)`` ensemble.
 
-    Steps
-    -----
-    1. Estimate correlation time τ₀ per feature (ACF first zero-crossing).
-    2. Set declustering lag ``dl = dl_factor × τ₀``.
-    3. Compute threshold as the *threshold_quantile* of the pooled data.
-    4. Decluster peaks, fit GPD to excesses.
-    5. Build compound-Poisson 3h-max distribution, compute MPM.
-    6. KS test of compound-max CDF against observed per-realisation maxima.
+    Steps:
+        1. Estimate correlation time τ₀ per feature (ACF first zero-crossing).
+        2. Set declustering lag ``dl = dl_factor × τ₀``.
+        3. Compute threshold as the *threshold_quantile* of the pooled data.
+        4. Decluster peaks, fit GPD to excesses.
+        5. Build compound-Poisson 3h-max distribution, compute MPM.
+        6. KS test of compound-max CDF against observed per-realisation maxima.
 
     All features are declustered in NumPy and then the GPD fits, MPM grids and
     bootstraps are solved together in two batched JAX kernels (rather than a
     Python loop over features).
 
-    Parameters
-    ----------
-    data : (N, T, F) array — ensemble time series (already absolute-valued
-        for features where you want the positive exceedance).
-    dt : float — sampling interval in seconds.
-    threshold_quantile : float — quantile for automatic threshold (default 0.95).
-    dl_factor : float — multiplier on τ₀ for the declustering lag (default 2).
-    min_peaks : int — minimum peaks required for a valid GPD fit (default 5).
-    target_duration : float, optional — duration in seconds for the max
-        distribution.  Default: full realisation length ``T × dt``.
-    n_bootstrap : int — number of bootstrap resamples for MPM CI (default 200).
-    per_instance : bool — if True, fit each ensemble member independently
-        and return an :class:`EVResult` with ``(N, F)`` MPM values.
-    lower_tail : bool or None — if ``None`` (default), automatically detect
-        per feature whether extremes are in the lower tail by comparing
-        tail spread below vs above the median.  If ``True``/``False``,
-        force lower/upper tail for all features.
+    Args:
+        data: Ensemble time series, shape (N, T, F) (already absolute-valued
+            for features where you want the positive exceedance).
+        dt: Sampling interval in seconds.
+        threshold_quantile: Quantile for automatic threshold (default 0.95).
+        dl_factor: Multiplier on τ₀ for the declustering lag (default 2).
+        min_peaks: Minimum peaks required for a valid GPD fit (default 5).
+        target_duration: Duration in seconds for the max distribution.
+            Default: full realisation length ``T × dt``.
+        n_bootstrap: Number of bootstrap resamples for MPM CI (default 200).
+        per_instance: If True, fit each ensemble member independently
+            and return an :class:`EVResult` with ``(N, F)`` MPM values.
+        lower_tail: If ``None`` (default), automatically detect per feature
+            whether extremes are in the lower tail by comparing tail spread
+            below vs above the median.  If ``True``/``False``, force
+            lower/upper tail for all features.
 
-    Returns
-    -------
-    EVResult — per-feature :class:`POTResult` objects.
+    Returns:
+        EVResult — per-feature :class:`POTResult` objects.
     """
     data = np.asarray(data, dtype=np.float64)
     N, _, F = data.shape

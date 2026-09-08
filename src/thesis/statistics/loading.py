@@ -35,18 +35,13 @@ def _read_parquet(path: Path, columns: list[str]) -> np.ndarray:
 class Ensemble:
     """Container for a loaded time series ensemble.
 
-    Attributes
-    ----------
-    data : np.ndarray, shape (N, T, F)
-        Feature values in physical units.
-    time : np.ndarray, shape (T,)
-        Shared time vector in seconds.
-    dt : float
-        Timestep in seconds (derived from *time*).
-    feature_names : list[str]
-        Ordered feature column names matching axis 2 of *data*.
-    metadata : list[dict]
-        Per-file simulation metadata.
+    Attributes:
+        data: Feature values in physical units, shape ``(N, T, F)``.
+        time: Shared time vector in seconds, shape ``(T,)``.
+        dt: Timestep in seconds (derived from *time*).
+        feature_names: Ordered feature column names matching axis 2 of
+            *data*.
+        metadata: Per-file simulation metadata.
     """
 
     data: np.ndarray
@@ -183,22 +178,17 @@ def load_ensemble(
 ) -> Ensemble:
     """Load parquet files into an Ensemble in physical units.
 
-    Parameters
-    ----------
-    files : sequence of Path
-        Parquet files to load (one per ensemble member).  A single
-        consolidated parquet file (containing a ``run_id`` column) is
-        also accepted.
-    features : list of str, optional
-        Feature column names to load.  Defaults to all 12 standard features.
-    resample_step : int, optional
-        Keep every *resample_step*-th row (after time column extraction).
-    t_warmup : float
-        Seconds to discard from the start of each trajectory.
+    Args:
+        files: Parquet files to load (one per ensemble member).  A single
+            consolidated parquet file (containing a ``run_id`` column) is
+            also accepted.
+        features: Feature column names to load.  Defaults to all 12
+            standard features.
+        resample_step: Keep every *resample_step*-th row (after time column
+            extraction).
+        t_warmup: Seconds to discard from the start of each trajectory.
 
-    Returns
-    -------
-    Ensemble
+    Returns:
         Loaded data with shared time vector and metadata.
     """
     if features is None:

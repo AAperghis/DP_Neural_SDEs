@@ -25,12 +25,9 @@ from thesis.shared.data_structures import FullOrderPhysicsConfig
 class NominalDynamicsFO:
     """JAX-compatible reduced-order DP model for azimuth-thruster vessels.
 
-    Parameters
-    ----------
-    cfg : FullOrderPhysicsConfig
-        Physical parameters (mass, damping, thruster layout, …).
-    jit_compile : bool
-        Whether to JIT-compile the forward pass (default ``True``).
+    Args:
+        cfg: Physical parameters (mass, damping, thruster layout, …).
+        jit_compile: Whether to JIT-compile the forward pass (default ``True``).
     """
 
     def __init__(self, cfg: FullOrderPhysicsConfig, jit_compile: bool = True) -> None:

@@ -12,28 +12,19 @@ import numpy as np
 class ModelEnsemble:
     """Sampled output from a :class:`~thesis.deep_ensemble.loading.DeepEnsemble`.
 
-    Attributes
-    ----------
-    data : np.ndarray, shape ``(M, N, T, F)``
-        Sampled trajectories in physical units.
-        *M* = number of ensemble members,
-        *N* = trajectories per member,
-        *T* = time steps,
-        *F* = output features.
-    time : np.ndarray, shape ``(T,)``
-        Shared time vector in seconds.
-    dt : float
-        Timestep in seconds.
-    feature_names : list[str]
-        Feature column names matching axis 3 of *data*.
-    member_ids : list[str]
-        Identifier for each member (file stem or MLflow run ID).
-    metadata : dict[str, Any]
-        Optional key-value metadata (e.g. wave conditions used).
-    latents : np.ndarray | None, shape ``(M, N, T, L)``
-        Latent-state trajectories (``L`` = latent dimension) when sampling was run
-        with ``return_latents=True``; otherwise ``None``. Kept so the cause of
-        divergent behaviour can be analysed in latent space.
+    Attributes:
+        data: Sampled trajectories in physical units, shape ``(M, N, T, F)``.
+            *M* = number of ensemble members, *N* = trajectories per member,
+            *T* = time steps, *F* = output features.
+        time: Shared time vector in seconds, shape ``(T,)``.
+        dt: Timestep in seconds.
+        feature_names: Feature column names matching axis 3 of *data*.
+        member_ids: Identifier for each member (file stem or MLflow run ID).
+        metadata: Optional key-value metadata (e.g. wave conditions used).
+        latents: Latent-state trajectories, shape ``(M, N, T, L)`` (``L`` =
+            latent dimension), when sampling was run with
+            ``return_latents=True``; otherwise ``None``. Kept so the cause
+            of divergent behaviour can be analysed in latent space.
     """
 
     data: np.ndarray
