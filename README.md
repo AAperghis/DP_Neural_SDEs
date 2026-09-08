@@ -4,7 +4,33 @@ MSc thesis, Marine Technology, Delft University of Technology — in collaborati
 
 ## Abstract
 
-<!-- TODO: add abstract -->
+Dynamic positioning (DP) operability is assessed using quasi-static force balances, which estimate the environmental
+conditions a vessel can hold but cannot resolve the transient excursions and footprint that often set the true
+operational limit. Time-domain simulation captures these effects and is increasingly used to predict DP behaviour more
+accurately. Both approaches are deterministic. They do not account for the uncertainty introduced by the DP system
+model and by the stochastic sea state, so a single run cannot characterise the distribution of the response.
+Probabilistic methods can, but quantifying uncertainty with deterministic simulators requires Monte Carlo sampling, and even then only parameter uncertainty can be captured; model uncertainty as a result of simulator inaccuracy remains out of reach. The resulting computational cost is too high for routine operational use. This work investigates whether machine-learned
+surrogate models can feasibly produce probabilistic short-term DP forecasts at a cost low enough for operational
+screening, and identifies the challenges of implementing such a model.
+
+A physics-informed hybrid stochastic differential equation (SDE) is developed for probabilistic short-term DP
+forecasting. The nominal DP dynamics are modelled in a deterministic Newtonian term, and the remaining unmodelled behaviour
+is captured by a latent neural SDE trained from simulated data. A deep ensemble of independently trained members quantifies the
+epistemic uncertainty. The method is evaluated against a full-order reference model on simulation data covering 128 sea
+states across the operational scatter diagram of a realistic DP vessel.
+
+The hybrid SDE reproduces the statistical properties of the vessel motions and thrust activity across the sampled sea
+states and recovers the closed-loop coupling structure of the DP system, though the strength of the coupling is
+underestimated. A batch of three-hour trajectories is generated in an average of 11.04s, with parallelisation resulting in a per trajectory cost of 0.015s. This replaces a full
+time-domain solve per realisation. The deep ensemble separates the aleatoric and epistemic contributions and yields a
+P90 (90th-percentile) excursion estimate that is conservative for most sea states. A posterior warm-start, which
+initialises the forecast from the inferred latent state, reduces the forecast median error to below 0.15m
+at all horizons. The main limitations are the weaker-than-reference motion-to-thrust coupling in the generated
+trajectories, the overconfident ensemble, and the practical barriers of training cost and simulation-only validation.
+Unlike existing quasi-static probabilistic methods, the approach delivers time-domain DP forecasts with a separated
+aleatoric and epistemic budget, at a fraction of the cost of the reference simulation. The method is
+demonstrated to be feasible. The limitations identified are in the training and data preparation pipeline, not in the
+fundamental approach.
 
 ## Repository structure
 
